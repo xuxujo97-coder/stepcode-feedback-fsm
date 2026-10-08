@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepCode 反馈处理流转 · 状态机</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #ffffff;
+      --color-paper-2: #f6f8fa;
+      --color-ink:     #1f2328;
+      --color-muted:   #59636e;
+      --color-soft:    #8c959f;
+      --color-rule:    rgba(31,35,40,0.12);
+      --color-accent:  #d1242f;
+      --font-sans:  'Geist', 'Noto Sans SC', 'PingFang SC', sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif SC', serif;
+      --font-mono:  'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 860px; width: 100%; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-muted); margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400; letter-spacing: -0.01em; line-height: 1.2;
+      color: var(--color-ink); margin-bottom: 0.75rem;
+    }
+    .sub { font-size: 0.85rem; color: var(--color-muted); margin-bottom: 1.75rem; }
+    svg { width: 100%; display: block; }
+    .colophon {
+      margin-top: 2rem; padding-top: 0.9rem;
+      border-top: 1px solid var(--color-rule);
+      font-family: var(--font-mono); font-size: 0.66rem;
+      letter-spacing: 0.1em; color: var(--color-soft);
+      display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">State Machine · Diagram Design</p>
+    <h1>StepCode 反馈处理流转</h1>
+    <p class="sub">三个渠道（各带负责人与回收方式）→ 登记分流 → 复现 → 定级 → 开发 → 验收 → 告知用户 → 归档；每个状态标负责人与动作，右侧三条异常分支 + 验收打回 + 每日截止线。</p>
+
+<svg viewBox="0 0 1000 1040" role="img" aria-labelledby="fsm-title fsm-desc" xmlns="http://www.w3.org/2000/svg">
+      <title id="fsm-title">StepCode 反馈状态机（详细版）</title>
+      <desc id="fsm-desc">反馈从三个渠道进入，经待审核、复现中、已确认、开发中、待验证、待回流到已修复的七态流转；含三个渠道的负责人与回收方式、每个状态的负责人与动作、P0 快速通道、等待用户、不修了三个分支、验收打回，以及每日截止线。</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#59636e"/>
+        </marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#d1242f"/>
+        </marker>
+      </defs>
+
+      <!-- ===== 连接线（先线后框） ===== -->
+      <g stroke="#59636e" stroke-width="1.4" fill="none">
+        <!-- 渠道汇入 ① -->
+        <path d="M184,88 V112 Q184,120 192,120 H432 Q440,120 440,128 V148" marker-end="url(#arrow)"/>
+        <line x1="500" y1="88" x2="500" y2="148" marker-end="url(#arrow)"/>
+        <path d="M816,88 V112 Q816,120 808,120 H568 Q560,120 560,128 V148" marker-end="url(#arrow)"/>
+        <!-- 主链 -->
+        <line x1="500" y1="232" x2="500" y2="260" marker-end="url(#arrow)"/>
+        <line x1="500" y1="340" x2="500" y2="368" marker-end="url(#arrow)"/>
+        <line x1="500" y1="448" x2="500" y2="476" marker-end="url(#arrow)"/>
+        <line x1="500" y1="556" x2="500" y2="584" marker-end="url(#arrow)"/>
+        <line x1="500" y1="644" x2="500" y2="672" marker-end="url(#arrow)"/>
+        <line x1="500" y1="724" x2="500" y2="752" marker-end="url(#arrow)"/>
+        <line x1="500" y1="880" x2="500" y2="896" marker-end="url(#arrow)"/>
+        <!-- ① ② → P0 -->
+        <path d="M640,180 H664 Q672,180 672,188 V208 Q672,216 664,216 H692" stroke="#d1242f" stroke-dasharray="5,4" marker-end="url(#arrow-accent)"/>
+        <path d="M640,288 H664 Q672,288 672,280 V240 Q672,232 664,232 H692" stroke="#d1242f" stroke-dasharray="5,4" marker-end="url(#arrow-accent)"/>
+        <!-- P0 → ④（右缘绕行） -->
+        <path d="M972,244 H988 V452 H660 Q652,452 652,460 V472" stroke="#d1242f" stroke-dasharray="5,4" marker-end="url(#arrow-accent)"/>
+        <!-- ② → 等用户补充 -->
+        <path d="M640,320 H732 Q740,320 740,328 V332" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <!-- 等用户 → 不修了 -->
+        <path d="M836,432 V472" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <!-- ③ → 不修了 -->
+        <path d="M640,424 H676 Q684,424 684,432 V492 Q684,500 676,500 H692" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <!-- ⑤ 打回 → ④（左侧回路） -->
+        <path d="M360,620 H324 Q316,620 316,612 V536 Q316,528 324,528 H352" stroke="#d1242f" stroke-dasharray="5,4" marker-end="url(#arrow-accent)"/>
+      </g>
+
+      <!-- ===== 节点 ===== -->
+      <!-- 三个入口点 -->
+      <circle cx="184" cy="8" r="5" fill="#1f2328"/>
+      <circle cx="500" cy="8" r="5" fill="#1f2328"/>
+      <circle cx="816" cy="8" r="5" fill="#1f2328"/>
+
+      <!-- 渠道层 -->
+      <g font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif">
+        <rect x="40" y="16" width="288" height="72" rx="8" fill="rgba(89,99,110,0.10)" stroke="#8c959f" stroke-width="1"/>
+        <text x="184" y="40" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">飞书社区群</text>
+        <text x="184" y="58" text-anchor="middle" font-size="12" fill="#59636e">负责人：孟祥雨</text>
+        <text x="184" y="74" text-anchor="middle" font-size="12" fill="#59636e">纯手动：扫话题 · 回复 · 填表</text>
+
+        <rect x="356" y="16" width="288" height="72" rx="8" fill="rgba(89,99,110,0.10)" stroke="#8c959f" stroke-width="1"/>
+        <text x="500" y="40" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">GitHub Issues</text>
+        <text x="500" y="58" text-anchor="middle" font-size="12" fill="#59636e">负责人：罗晓阳 + 孟祥雨</text>
+        <text x="500" y="74" text-anchor="middle" font-size="12" fill="#59636e">API 拉 issue + 手动分诊回复</text>
+
+        <rect x="672" y="16" width="288" height="72" rx="8" fill="rgba(89,99,110,0.10)" stroke="#8c959f" stroke-width="1"/>
+        <text x="816" y="40" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">微信群</text>
+        <text x="816" y="58" text-anchor="middle" font-size="12" fill="#59636e">负责人：周旭</text>
+        <text x="816" y="74" text-anchor="middle" font-size="12" fill="#59636e">微信本地导出（WeChatMsg）</text>
+      </g>
+
+      <!-- 主链七态（x360 w280 h76） -->
+      <g font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif">
+        <rect x="360" y="156" width="280" height="76" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="180" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">① 待审核</text>
+        <text x="500" y="198" text-anchor="middle" font-size="12" fill="#59636e">渠道负责人（孟 / 罗 / 周）</text>
+        <text x="500" y="214" text-anchor="middle" font-size="12" fill="#8c959f">补全信息登记进表 · 24h 内分流完</text>
+
+        <rect x="360" y="264" width="280" height="76" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="288" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">② 复现中</text>
+        <text x="500" y="306" text-anchor="middle" font-size="12" fill="#59636e">孟 + 罗分担 · QA 到岗后接</text>
+        <text x="500" y="322" text-anchor="middle" font-size="12" fill="#8c959f">按步骤重试复现，填复现状态 / 复现人</text>
+
+        <rect x="360" y="372" width="280" height="76" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="396" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">③ 已确认</text>
+        <text x="500" y="414" text-anchor="middle" font-size="12" fill="#59636e">PM 周旭 · 16:30 定级完</text>
+        <text x="500" y="430" text-anchor="middle" font-size="12" fill="#8c959f">定 P0–P3 或拒绝 · 指派 Dev · 填 ETA</text>
+
+        <rect x="360" y="480" width="280" height="76" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="504" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">④ 开发中</text>
+        <text x="500" y="522" text-anchor="middle" font-size="12" fill="#59636e">Dev（研发同学）</text>
+        <text x="500" y="538" text-anchor="middle" font-size="12" fill="#8c959f">修复并提交 PR，填预计完成时间</text>
+
+        <rect x="360" y="588" width="280" height="76" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="612" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">⑤ 待验证</text>
+        <text x="500" y="630" text-anchor="middle" font-size="12" fill="#59636e">验收实习生 · QA 到岗后主责</text>
+        <text x="500" y="646" text-anchor="middle" font-size="12" fill="#8c959f">修复版本上重放：必现 1 次 · 间歇 ≥3 次</text>
+
+        <rect x="360" y="696" width="280" height="76" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="720" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">⑥ 待回流</text>
+        <text x="500" y="738" text-anchor="middle" font-size="12" fill="#59636e">线 owner（该产品线负责人）</text>
+        <text x="500" y="754" text-anchor="middle" font-size="12" fill="#8c959f">3 天内回原渠道告知 · 填回流状态</text>
+
+        <rect x="360" y="804" width="280" height="76" rx="8" fill="#f6f8fa" stroke="#1f2328" stroke-width="1"/>
+        <text x="500" y="828" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">⑦ 已修复</text>
+        <text x="500" y="846" text-anchor="middle" font-size="12" fill="#59636e">系统 · cron 自动</text>
+        <text x="500" y="862" text-anchor="middle" font-size="12" fill="#8c959f">须已告知用户 · 每小时归档</text>
+      </g>
+
+      <!-- 终点 -->
+      <circle cx="500" cy="908" r="8" fill="#ffffff" stroke="#1f2328" stroke-width="1.2"/>
+      <circle cx="500" cy="908" r="5" fill="#1f2328"/>
+
+      <!-- 分支框（右列 x700 w272） -->
+      <g font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif">
+        <rect x="700" y="188" width="272" height="112" rx="8" fill="rgba(209,36,47,0.06)" stroke="#d1242f" stroke-opacity="0.5" stroke-dasharray="4,4" stroke-width="1"/>
+        <text x="716" y="208" font-size="12" font-weight="600" fill="#d1242f">P0 快速通道（最严重问题）</text>
+        <text x="716" y="228" font-size="12" fill="#59636e">崩溃 / 数据丢失 / 安全漏洞</text>
+        <text x="716" y="244" font-size="12" fill="#59636e">大面积不可用 / 迁移被卡住</text>
+        <text x="716" y="260" font-size="12" fill="#59636e">→ 1h 拉群：周 + 实习生 + Dev</text>
+        <text x="716" y="276" font-size="12" fill="#59636e">当天答复用户 · 先处理后补登记</text>
+        <text x="716" y="292" font-size="12" fill="#59636e">跳过排队，直接进 ④ 开发中</text>
+
+        <rect x="700" y="340" width="272" height="92" rx="8" fill="#fff8c5" stroke="#9a6700" stroke-opacity="0.5" stroke-dasharray="4,3" stroke-width="1"/>
+        <text x="716" y="360" font-size="12" font-weight="600" fill="#9a6700">等用户补充（复现不了时）</text>
+        <text x="716" y="380" font-size="12" fill="#59636e">按模板向用户追问，最多 3 次 · 等 2 周</text>
+        <text x="716" y="396" font-size="12" fill="#59636e">补充到位 → 回到 ② 复现中</text>
+        <text x="716" y="412" font-size="12" fill="#59636e">两周无回应 → 不修了（回话说明）</text>
+
+        <rect x="700" y="480" width="272" height="84" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-dasharray="4,3" stroke-width="1"/>
+        <text x="716" y="500" font-size="12" font-weight="600" fill="#59636e">不修了：非问题 / 重复（终态）</text>
+        <text x="716" y="520" font-size="12" fill="#59636e">PM 判定非问题或与已有反馈重复</text>
+        <text x="716" y="536" font-size="12" fill="#59636e">回原渠道说明原因后关闭</text>
+        <text x="716" y="552" font-size="12" fill="#59636e">重复挂父记录 · 可申诉一次</text>
+      </g>
+
+      <!-- ===== 转移标签（带底衬） ===== -->
+      <g font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif" font-size="12" fill="#59636e">
+        <rect x="508" y="124" width="140" height="16" fill="#ffffff"/>
+        <text x="516" y="136">两扫 12:30 / 18:00</text>
+
+        <rect x="512" y="240" width="140" height="16" fill="#ffffff"/>
+        <text x="516" y="252">当天 15:30 分流完</text>
+        <rect x="512" y="348" width="140" height="16" fill="#ffffff"/>
+        <text x="516" y="360">复现成功（可复现）</text>
+        <rect x="512" y="456" width="148" height="16" fill="#ffffff"/>
+        <text x="516" y="468">定级完成 · 指派 Dev</text>
+        <rect x="512" y="564" width="136" height="16" fill="#ffffff"/>
+        <text x="516" y="576">修复提交（挂 PR）</text>
+        <rect x="512" y="672" width="188" height="16" fill="#ffffff"/>
+        <text x="516" y="684">重放不重现 · 填验收记录</text>
+        <rect x="512" y="780" width="148" height="16" fill="#ffffff"/>
+        <text x="516" y="792">已告知 · 用户确认</text>
+
+        <rect x="648" y="160" width="52" height="16" fill="#ffffff"/>
+        <text x="652" y="172" fill="#d1242f">判 P0</text>
+        <rect x="648" y="308" width="60" height="16" fill="#ffffff"/>
+        <text x="652" y="320">复现不了</text>
+        <rect x="644" y="404" width="52" height="16" fill="#ffffff"/>
+        <text x="648" y="416">定级拒绝</text>
+        <rect x="844" y="446" width="88" height="16" fill="#ffffff"/>
+        <text x="848" y="458">2 周无回应</text>
+
+        <rect x="160" y="560" width="140" height="16" fill="#ffffff"/>
+        <text x="300" y="572" text-anchor="end" fill="#d1242f">仍重现 · 退回重修</text>
+        <rect x="148" y="576" width="152" height="16" fill="#ffffff"/>
+        <text x="300" y="588" text-anchor="end" fill="#d1242f">附验收记录 · 优先级不降</text>
+      </g>
+
+      <!-- ===== 尾注 ===== -->
+      <text x="500" y="936" text-anchor="middle" font-size="12" fill="#59636e" font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif">◆ 结束：用户拿到答复，问题归档；高频问题沉淀进 FAQ</text>
+      <text x="500" y="964" text-anchor="middle" font-size="12" fill="#8c959f" font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif">每日截止线：15:30 分流完 → 16:30 定级完 → 18:00 Dev 接单完；18:00 后新反馈流到明天（P0 除外）</text>
+
+      <!-- ===== 图例 ===== -->
+      <line x1="40" y1="1000" x2="960" y2="1000" stroke="rgba(31,35,40,0.12)" stroke-width="0.8"/>
+      <text x="40" y="1020" font-size="8" fill="#8c959f" letter-spacing="0.14em" font-family="'Geist Mono',ui-monospace,monospace">LEGEND</text>
+      <g font-family="'Geist','Noto Sans SC','PingFang SC',sans-serif" font-size="12" fill="#59636e">
+        <line x1="100" y1="1016" x2="124" y2="1016" stroke="#59636e" stroke-width="1.4"/>
+        <text x="130" y="1020">正常流转</text>
+        <line x1="216" y1="1016" x2="240" y2="1016" stroke="#d1242f" stroke-width="1.4" stroke-dasharray="5,4"/>
+        <text x="246" y="1020">P0 · 打回</text>
+        <line x1="336" y1="1016" x2="360" y2="1016" stroke="#59636e" stroke-width="1.4" stroke-dasharray="4,3"/>
+        <text x="366" y="1020">等待 / 终止分支</text>
+        <circle cx="508" cy="1016" r="5" fill="#ffffff" stroke="#1f2328" stroke-width="1.2"/>
+        <circle cx="508" cy="1016" r="2.5" fill="#1f2328"/>
+        <text x="522" y="1020">终态</text>
+        <text x="600" y="1020">框内第二行 = 负责人 · 第三行 = 做什么</text>
+      </g>
+    </svg>
+
+    <footer class="colophon">
+      <span>STEPCODE FEEDBACK FSM · 反馈跟进 SOP §2</span>
+      <span>三渠道专人 · 孟+罗复现 · PM 定级 · DEV 修复 · 实习生验收</span>
+    </footer>
+  </div>
+</body>
+</html>
